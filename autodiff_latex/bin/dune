@@ -1,0 +1,8 @@
+(executable
+ (public_name autodiff_latex)
+ (name main)
+ (libraries autodiff_latex re.str core))
+
+(env
+ (dev
+  (flags (:standard -warn-error -K))))

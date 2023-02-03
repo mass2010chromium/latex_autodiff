@@ -1,0 +1,83 @@
+(*
+ * expr:
+ *   bin_op
+ *
+ * bin_op:
+ *   binop_explicit_3
+ *
+ * binop_explicit_3:
+ *   binop_explicit_2 [+-] binop_explicit_3
+ *   binop_explicit_2
+ *
+ * binop_explicit_2:
+ *   unary_2 [*/] binop_explicit_2
+ *   unary_2
+ *
+ * unary_2:
+ *   - unary_2
+ *   binop_implicit
+ *
+ * binop_implicit:
+ *   binop_explicit_1 binop_implicit    // implicit multiplication
+ *   binop_explicit_1
+ *
+ * binop_explicit_1:
+ *   binop_explicit_0 ^ single
+ *   binop_explicit_0
+ *
+ * binop_explicit_0:
+ *   \frac single single
+ *   unary_1
+ *
+ * unary_1:
+ *   <op> term
+ *   <op> single
+ *   | expr |       // abs except its horribly ill defined lmao; the only way this makes sense is if its first match
+ *   trig_power
+ *
+ * trig_power:
+ *   <trig> ^ single    // mfw
+ *   term
+ *
+ * term: 
+ *   \p single      // custom parentheses
+ *   ( expr )
+ *   var
+ *   const
+ *
+ * single:
+ *   { expr }
+ *   alpha          // type: var
+ *   numeric        // type: num
+ *
+ * var:
+ *   sym            // matching list
+ *
+ * const:
+ *   sym            // not matching list
+ *   num
+ *
+ * sym:
+ *   alpha _ single_str
+ *   alpha
+ *
+ * alpha:           // alphabetic character
+ * alphanumeric:    // alphanumeric character
+ * numeric:         // number character
+ * tok:             // any token lmao (except '{}_')
+ *
+ * single_str:
+ *   { subscript }
+ *   tok
+ *
+ * subscript:
+ *   { subscript }
+ *   tok _ subscript
+ *   tok subscript
+ *   tok
+ * 
+ * num:
+ *   numeric num
+ *   . num
+ *   numeric
+ *)
