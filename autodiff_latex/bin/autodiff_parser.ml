@@ -162,9 +162,9 @@ and parse_term tok_list =
     | _ -> Error "Unterminated '('"
   )
   | _ -> (
-    match parse_var tok_list with
+    match parse_const tok_list with
     | (Ok _) as parsed -> parsed
-    | _ -> parse_const tok_list
+    | _ -> parse_var tok_list
   )
 
 and parse_single tok_list =
@@ -185,13 +185,13 @@ and parse_single tok_list =
 
 and parse_var tok_list =
   match parse_sym tok_list with
-  | Ok ((Leaf_SYM s), rest) -> Ok (Leaf_VAR s, rest)
+  | Ok (Leaf_SYM s, rest) -> Ok (Leaf_VAR s, rest)
   | (Error _) as e -> e
   | _ -> Error "Invalid token for variable"
 
 and parse_const tok_list =
   match parse_sym tok_list with
-  | Ok (res, rest) -> Ok (res, rest)
+  | (Ok (Leaf_SYM s, _)) as res when List.exists ~f:(fun f -> Poly.(f = s)) known_symbols -> res
   | _ -> (
     match parse_num tok_list with
     | Ok ((Leaf_STR s), rest) -> Ok (Leaf_NUM (float_of_string s), rest)

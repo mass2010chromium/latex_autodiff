@@ -9,6 +9,8 @@ let left_brace  = {|\left(|} ;;
 let right_brace = {|\right)|} ;;
 *)
 
+let known_symbols = [ {|\pi|} ]
+
 type token =
   | Tok_S of string
   | Tok_OP of string

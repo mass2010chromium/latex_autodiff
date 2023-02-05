@@ -113,6 +113,7 @@ and bubble_const node =
     let%bind res = bubble_const n in
     match res with
     | Leaf_NUM 0. -> Ok (Leaf_NUM 1.)
+    | Leaf_SYM {|\pi|} -> Ok (Leaf_NUM (-1.))
     | Binop (B_MUL, (Leaf_NUM x, n2)) when Poly.(x < 0.) -> Ok (Unary (U_COS, Binop (B_MUL, (Leaf_NUM (-1. *. x), n2))))
     | _ -> Ok (Unary (U_COS, res))
   )
@@ -120,6 +121,7 @@ and bubble_const node =
     let%bind res = bubble_const n in
     match res with
     | Leaf_NUM 0. -> Ok (Leaf_NUM 0.)
+    | Leaf_SYM {|\pi|} -> Ok (Leaf_NUM 0.)
     | Binop (B_MUL, (Leaf_NUM x, n2)) when Poly.(x < 0.) -> Ok (Binop (B_MUL, (Leaf_NUM (-1.), (Unary (U_SIN, Binop (B_MUL, (Leaf_NUM (-1. *. x), n2)))))))
     | _ -> Ok (Unary (U_SIN, res))
   )

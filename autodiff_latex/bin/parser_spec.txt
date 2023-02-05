@@ -42,8 +42,8 @@
  * term: 
  *   \p single      // custom parentheses
  *   ( expr )
- *   var
  *   const
+ *   var
  *
  * single:
  *   { expr }
@@ -51,10 +51,10 @@
  *   numeric        // type: num
  *
  * var:
- *   sym            // matching list
+ *   sym            // not matching list
  *
  * const:
- *   sym            // not matching list
+ *   sym            // matching list
  *   num
  *
  * sym:
