@@ -1,6 +1,8 @@
 (executable
  (public_name autodiff_latex)
  (name main)
+ (preprocess
+  (pps ppx_let))
  (libraries autodiff_latex re.str core))
 
 (env

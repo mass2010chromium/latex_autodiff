@@ -2,6 +2,8 @@ open Core
 open Autodiff_defs
 open Autodiff_tokenizer
 open Autodiff_parser
+open Calculus
+open Symbolic
 
 let () = print_endline ""
 
@@ -15,10 +17,22 @@ let main =
   let () = print_endline s in
   let tok_list = tokenize_latex s in
   match parse_latex tok_list with
-  | Parse_OK (node, _) -> (
-    print_endline (string_of_node node) ;
-    print_endline (latex_of_node node)
+  | Ok (node, _) -> (
+    (*print_endline (string_of_node node) ;
+    print_endline (latex_of_node node) ;*)
+    match derivative node 0 {|\theta|} with
+    | Ok (node) -> (
+      match simplify node with
+      | Ok (pruned) -> (
+        print_endline "" ;
+        print_endline (string_of_node pruned) ;
+        print_endline "" ;
+        print_endline (latex_of_node pruned)
+      )
+      | Error e -> print_endline ("prune error: " ^ e)
+      )
+    | Error e -> print_endline ("autodiff error: " ^ e)
   )
-  | Parse_FAIL e -> print_endline ("parse error: " ^ e)
+  | Error e -> print_endline ("parse error: " ^ e)
 
 let () = main

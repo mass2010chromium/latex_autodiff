@@ -35,8 +35,8 @@
  *   | expr |       // abs except its horribly ill defined lmao; the only way this makes sense is if its first match
  *   trig_power
  *
- * trig_power:
- *   <trig> ^ single    // mfw
+ * func_power:
+ *   <func> ^ single    // mfw
  *   term
  *
  * term: 
