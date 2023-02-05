@@ -8,47 +8,47 @@ let binop_3_map : ((node * node) -> node) S.t =
     S.of_alist_exn [
       ("+", fun (s1, s2) -> (
         match s2 with
-        | Binop_ADD (a, b) -> Binop_ADD (Binop_ADD (s1, a), b)
-        | _ -> Binop_ADD (s1, s2)
+        | Binop (B_ADD, (a, b)) -> Binop (B_ADD, (Binop (B_ADD, (s1, a)), b))
+        | _ -> Binop (B_ADD, (s1, s2))
       ));
       ("-", fun (s1, s2) -> (
         match s2 with
-        | Binop_ADD (a, b) -> Binop_ADD (Binop_ADD (s1, Binop_MUL (Leaf_NUM (-1.), a)), b)
-        | _ -> Binop_ADD (s1, Binop_MUL (Leaf_NUM (-1.), s2))
+        | Binop (B_ADD, (a, b)) -> Binop (B_ADD, (Binop (B_ADD, (s1, Binop (B_MUL, (Leaf_NUM (-1.), a)))), b))
+        | _ -> Binop (B_ADD, (s1, Binop (B_MUL, (Leaf_NUM (-1.), s2))))
       ))
     ]
 let binop_2_map : ((node * node) -> node) S.t =
     S.of_alist_exn [
       ("*", fun (s1, s2) -> (
         match s2 with
-        | Binop_MUL (a, b) -> Binop_MUL (Binop_MUL (s1, a), b)
-        | _ -> Binop_MUL (s1, s2)
+        | Binop (B_MUL, (a, b)) -> Binop (B_MUL, (Binop (B_MUL, (s1, a)), b))
+        | _ -> Binop (B_MUL, (s1, s2))
       ));
       ("/", fun (s1, s2) -> (
         match s2 with
-        | Binop_MUL (a, b) -> Binop_MUL (Binop_MUL (s1, (Binop_EXP (a, Leaf_NUM (-1.)))), b)
-        | _ -> Binop_MUL (s1, (Binop_EXP (s2, Leaf_NUM (-1.))))
+        | Binop (B_MUL, (a, b)) -> Binop (B_MUL, (Binop (B_MUL, (s1, (Binop (B_EXP, (a, Leaf_NUM (-1.)))))), b))
+        | _ -> Binop (B_MUL, (s1, (Binop (B_EXP, (s2, Leaf_NUM (-1.))))))
       ))
     ]
 let binop_1_map : ((node * node) -> node) S.t =
     S.of_alist_exn [
-      ("^", fun s -> Binop_EXP s)
+      ("^", fun s -> Binop (B_EXP, s))
     ]
 let unary_op_map : ((node) -> node) S.t =
     S.of_alist_exn [
-      ({|\cos|}, fun s -> Unary_COS s);
-      ({|\sin|}, fun s -> Unary_SIN s);
-      ({|\log|}, fun s -> Unary_LOG s);
-      ({|\abs|}, fun s -> Unary_ABS s);
-      ({|\sqrt|}, fun s -> Binop_EXP (s, Leaf_NUM 0.5));
-      ({|\dot|}, fun s -> Unary_DERIV s);
-      ({|\ddot|}, fun s -> Unary_DDERIV s)
+      ({|\cos|}, fun s -> Unary (U_COS, s));
+      ({|\sin|}, fun s -> Unary (U_SIN, s));
+      ({|\log|}, fun s -> Unary (U_LOG, s));
+      ({|\abs|}, fun s -> Unary (U_ABS, s));
+      ({|\sqrt|}, fun s -> Binop (B_EXP, (s, Leaf_NUM 0.5)));
+      ({|\dot|}, fun s -> Unary (U_DERIV, s));
+      ({|\ddot|}, fun s -> Unary (U_DDERIV, s))
     ]
 let func_op_map : ((node) -> node) S.t =
     S.of_alist_exn [
-      ({|\cos|}, fun s -> Unary_COS s);
-      ({|\sin|}, fun s -> Unary_SIN s);
-      ({|\log|}, fun s -> Unary_LOG s);
+      ({|\cos|}, fun s -> Unary (U_COS, s));
+      ({|\sin|}, fun s -> Unary (U_SIN, s));
+      ({|\log|}, fun s -> Unary (U_LOG, s));
     ]
 
 type parse_status = (node * token list, string) Result.t
@@ -85,7 +85,7 @@ and parse_unary_2 tok_list =
   match tok_list with
   | Tok_S "-" :: rest -> (
     match parse_unary_2 rest with
-    | Ok (res, rest2) -> Ok (Binop_MUL (Leaf_NUM (-1.), res), rest2)
+    | Ok (res, rest2) -> Ok (Binop (B_MUL, (Leaf_NUM (-1.), res)), rest2)
     | _ -> parse_binop_implicit tok_list
   )
   | _ -> parse_binop_implicit tok_list
@@ -95,7 +95,7 @@ and parse_binop_implicit tok_list =
   match parsed with
   | Ok (res, rest) -> (
     match parse_binop_implicit rest with
-    | Ok (res2, rest2) -> Ok ((Binop_MUL(res, res2)), rest2)
+    | Ok (res2, rest2) -> Ok ((Binop (B_MUL, (res, res2))), rest2)
     | _ -> parsed
   )
   | _ -> parsed
@@ -108,7 +108,7 @@ and parse_binop_explicit_0 tok_list =
   | Tok_S {|\frac|} :: rest -> (
     let%bind (res, rest2) = parse_single rest in
     let%bind (res2, rest3) = (parse_single rest2) in
-    Ok ((Binop_MUL (res, (Binop_EXP (res2, (Leaf_NUM (-1.)))))), rest3)
+    Ok ((Binop (B_MUL, (res, (Binop (B_EXP, (res2, (Leaf_NUM (-1.)))))))), rest3)
   )
   | _ -> parse_unary_1 tok_list
 
@@ -125,7 +125,7 @@ and parse_unary_1 tok_list =
       let trunc = List.sub rest ~pos:0 ~len:end_idx in
       let parsed = parse_expr trunc in
       match parsed with
-      | Ok (res, []) -> Ok ((Unary_ABS res), List.drop rest end_idx)
+      | Ok (res, []) -> Ok ((Unary (U_ABS, res)), List.drop rest end_idx)
       | (Error _) as e -> e
       | _ -> Error "Unmatched '|'"
     )
@@ -148,7 +148,7 @@ and parse_func_power tok_list =
   | Tok_S t :: Tok_S "^" :: rest when S.mem func_op_map t -> (
     let%bind (res, rest2) = parse_single rest in
     let%bind (res2, rest3) = parse_term rest2 in
-    Ok ( Binop_EXP ( ((S.find_exn func_op_map t) res2), res), rest3 )
+    Ok ( Binop (B_EXP, ( ((S.find_exn func_op_map t) res2), res)), rest3 )
   )
   | _ -> parse_term tok_list
   
